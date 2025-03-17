@@ -37,3 +37,6 @@ Changes made from the one-pager include:
 - the removal of parrying in favor of a focus on platforming and magic attacking.
 - omission of the "hover dash" technique" 
 - omission of planned cutscenes and story
+
+3/16/25
+UPDATED FOR MULTIPLAYER!
