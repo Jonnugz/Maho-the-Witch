@@ -26,7 +26,7 @@ Alternatively, run the .exe file included in the "Build" file.
 
 Credits:
 
-All visual assets and level design are original.
+All visual assets and level design are original, illustrated and animated by me!
 Heavily followed tutorial created by Pandemonium for the game's core mechanics.
 Followed tutorial by Brackeys for the main menu.
 Sound assets were taken from Kirby's Adventure :).
