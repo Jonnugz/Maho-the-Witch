@@ -1,8 +1,9 @@
+using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
     [SerializeField] private float speed;
     [SerializeField] private float jumpPower;
@@ -15,89 +16,121 @@ public class PlayerMovement : MonoBehaviour
     private float wallJumpCooldown;
     private float horizontalInput;
 
-    private void Awake()
+    public override void OnNetworkSpawn()
     {
-        //Grab references for rigidbod and animator from object
         body = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider2D>();
-
+        isGrounded();
     }
 
-    private void Update()
+    public void Update()
     {
+        if (!IsOwner) return; // Ensure only the owning client controls movement
+        
         horizontalInput = Input.GetAxis("Horizontal");
 
-        //flip player when moving left-right
         if (horizontalInput > 0.01f)
-            transform.localScale = Vector3.one;
+            FlipServerRpc(1);
         else if (horizontalInput < -0.01f)
-            transform.localScale = new Vector3(-1, 1, 1);
+            FlipServerRpc(-1);
 
-        if (Input.GetKey(KeyCode.Space) && isGrounded())
-            Jump();
-
-        //Set anim param
-        anim.SetBool("run", horizontalInput != 0);
-        anim.SetBool("grounded", isGrounded());
-        anim.SetBool("wall", onWall());
-
-
-        //Wall jumping logic
-        if(wallJumpCooldown > 0.2f)
+        if (Input.GetKeyDown(KeyCode.Space)) 
         {
+            JumpServerRpc();
+            if (isGrounded() || onWall())
+                SoundManager.instance.PlaySound(jumpSound);
+        }
 
-            body.velocity = new Vector2(Input.GetAxis("Horizontal")*speed, body.velocity.y);
-
-            if (onWall() && !isGrounded())
-            {
-                //anim.SetTrigger("wall");
-                body.gravityScale = 0;
-                body.velocity = Vector2.zero;
-            }
-            else
-                body.gravityScale = 3;
-
-            if (Input.GetKey(KeyCode.Space))
-            {
-                Jump();
-
-                //Plays jump sound once per frame inputted
-                if(Input.GetKeyDown(KeyCode.Space) && (isGrounded() || onWall()))
-                    SoundManager.instance.PlaySound(jumpSound);
-            }
+        MoveAnimServerRpc(horizontalInput);  // Send input to server to update animation
+        
+        if (wallJumpCooldown > 0.2f)
+        {
+            Vector2 newVelocity = new Vector2(horizontalInput * speed, body.linearVelocity.y);
+            MoveServerRpc(newVelocity);
         }
         else
+        {
             wallJumpCooldown += Time.deltaTime;
+        }
     }
 
+    [ServerRpc]
+    private void MoveAnimServerRpc(float input)
+    {
+        MoveAnimClientRpc(input);
+    }
+    
+    [ClientRpc]
+    private void MoveAnimClientRpc(float input)
+    {
+        anim.SetBool("run", input != 0);
+        anim.SetBool("grounded", isGrounded());
+        anim.SetBool("wall", onWall());
+    }
 
-    private void Jump()
+    [ServerRpc]
+    private void MoveServerRpc(Vector2 velocity)
+    {
+        body.linearVelocity = velocity;
+        MoveClientRpc(velocity);
+    }
+
+    [ClientRpc]
+    private void MoveClientRpc(Vector2 velocity)
+    {
+        if (!IsOwner) 
+            body.linearVelocity = velocity;
+    }
+
+    [ServerRpc]
+    private void JumpServerRpc()
     {
         if (isGrounded())
         {
-            body.velocity = new Vector2(body.velocity.x, jumpPower);
+            Vector2 jumpVelocity = new Vector2(body.linearVelocity.x, jumpPower);
+            body.linearVelocity = jumpVelocity;
             anim.SetTrigger("jump");
+            JumpClientRpc(jumpVelocity);
         }
         else if (onWall() && !isGrounded())
         {
-            
-            if (horizontalInput == 0)
-            {
-                body.velocity = new Vector2(-Mathf.Sign(transform.localScale.x) * 10, 8);
-                transform.localScale = new Vector3(-Mathf.Sign(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-            }
-            else
-                body.velocity = new Vector2(-Mathf.Sign(transform.localScale.x) * 3, 8);
-                
+            // Wall jump logic for the server
+            Vector2 wallJumpVelocity = horizontalInput == 0 ? 
+                new Vector2(-Mathf.Sign(transform.localScale.x) * 10, 13) : 
+                new Vector2(-Mathf.Sign(transform.localScale.x) * 3, 13);
+
+            // Flip the character to the opposite direction based on the wall jump direction
+            FlipServerRpc(-Mathf.Sign(transform.localScale.x));
+            body.linearVelocity = wallJumpVelocity;
+
+            // Reset wall jump cooldown on the server
             wallJumpCooldown = 0;
+
+            // Propagate the wall jump velocity to the client
+            JumpClientRpc(wallJumpVelocity);
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    [ClientRpc]
+    private void JumpClientRpc(Vector2 velocity)
     {
+        body.linearVelocity = velocity;
     }
-    
+
+    [ServerRpc]
+    private void FlipServerRpc(float direction)
+    {
+        transform.localScale = new Vector3(direction, 1, 1);
+        FlipClientRpc(direction);
+    }
+
+    [ClientRpc]
+    private void FlipClientRpc(float direction)
+    {
+        if (!IsOwner) 
+            transform.localScale = new Vector3(direction, 1, 1);
+    }
 
     private bool isGrounded()
     {
@@ -115,5 +148,4 @@ public class PlayerMovement : MonoBehaviour
     {
         return !onWall();
     }
-
 }

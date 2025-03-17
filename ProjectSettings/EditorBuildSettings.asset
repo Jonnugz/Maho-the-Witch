@@ -15,3 +15,4 @@ EditorBuildSettings:
     path: Assets/Levels/WinScreen.unity
     guid: 8739287120cec6147b931b7ea616ceaf
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

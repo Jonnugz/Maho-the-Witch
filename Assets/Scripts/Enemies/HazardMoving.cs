@@ -43,7 +43,7 @@ public class HazardMoving : MonoBehaviour
 	{
 		if (collision.tag == "Player")
 		{
-			collision.GetComponent<Health>().TakeDamage(damage);
+			collision.GetComponent<Health>().TakeDamageServerRpc(damage);
 		}
 	}
 }

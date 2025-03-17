@@ -11,7 +11,7 @@ public class HealthCollectible : MonoBehaviour
 	{
 		if (collision.tag == "Player")
 		{
-			collision.GetComponent<Health>().AddHealth(healthValue);
+			collision.GetComponent<Health>().AddHealthServerRpc(healthValue);
 			gameObject.SetActive(false);
 			SoundManager.instance.PlaySound(healthCollectSound);
 		}

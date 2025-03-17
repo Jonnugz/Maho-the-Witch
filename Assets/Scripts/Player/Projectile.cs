@@ -27,7 +27,7 @@ public class Projectile : MonoBehaviour
         transform.Translate(movementSpeed, 0, 0); 
 
         lifetime += Time.deltaTime;
-        if (lifetime > 10) gameObject.SetActive(false);
+        //if (lifetime > 10) gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -39,7 +39,7 @@ public class Projectile : MonoBehaviour
         //deals dmg only to enemies
         if(collision.tag == "Enemy")
         {
-            collision.GetComponent<Health>().TakeDamage(1);
+            collision.GetComponent<Health>().TakeDamageServerRpc(1);
 
             //play enemy hitsound
             SoundManager.instance.PlaySound(enemyHitSound);

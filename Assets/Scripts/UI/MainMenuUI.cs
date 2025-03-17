@@ -2,17 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.Netcode;
 
 public class MainMenuUI : MonoBehaviour
 {
 
     [SerializeField] private AudioClip interactSound;
-    // Start is called before the first frame update
+
+
     public void PlayGame()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene("Level1");
         Time.timeScale = 1;
         SoundManager.instance.PlaySound(interactSound);
+        NetworkManager.Singleton.Shutdown();
     }
 
     // Main Menu button for end card

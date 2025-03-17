@@ -9,7 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8229326827788633138}
+  - component: {fileID: -3200488180083044139}
   - component: {fileID: 8622844119576706639}
+  - component: {fileID: -3402341359728782853}
   m_Layer: 0
   m_Name: EnemyPatrol
   m_TagString: Untagged
@@ -35,6 +37,31 @@ Transform:
   - {fileID: 4352992117660662915}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-3200488180083044139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1281304390770215409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3623087611
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &8622844119576706639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47,12 +74,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9b1f86e2cc5e244684d67a20148e54c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   leftEdge: {fileID: 6297617658070147137}
   rightEdge: {fileID: 8564522060171935837}
   enemy: {fileID: 4352992117660662915}
   speed: 2
   idleDuration: 1
   anim: {fileID: 7396055364311013023}
+--- !u!114 &-3402341359728782853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1281304390770215409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &3279620766262608547
 GameObject:
   m_ObjectHideFlags: 0
@@ -123,6 +187,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8229326827788633138}
     m_Modifications:
+    - target: {fileID: -3845798651305674967, guid: c88073b047d19c345bcb492fd4741be3, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3026733167
+      objectReference: {fileID: 0}
     - target: {fileID: 2082237569992863266, guid: c88073b047d19c345bcb492fd4741be3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 9.25
@@ -164,7 +232,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5175540744479801874, guid: c88073b047d19c345bcb492fd4741be3, type: 3}
-      propertyPath: components.Array.data[0]
+      propertyPath: 'components.Array.data[0]'
       value: 
       objectReference: {fileID: 8622844119576706639}
     - target: {fileID: 6341457707719224195, guid: c88073b047d19c345bcb492fd4741be3, type: 3}

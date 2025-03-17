@@ -1,52 +1,74 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerAttack : MonoBehaviour
+public class PlayerAttack : NetworkBehaviour
 {
-	[SerializeField] private float attackCooldown;
-	[SerializeField] private Transform wavePoint;
-	[SerializeField] private GameObject[] magics;
-	[SerializeField] private AudioClip attackSound;
+    [SerializeField] private float attackCooldown;
+    [SerializeField] private Transform wavePoint;
+    [SerializeField] private AudioClip attackSound;
+    private float cooldownTimer = Mathf.Infinity;
+    private Animator anim;
+    private PlayerMovement playerMovement;
+    
+    private void Awake()
+    {
+        anim = GetComponent<Animator>();
+        playerMovement = GetComponent<PlayerMovement>();
+    }
 
-	private Animator anim;
-	private PlayerMovement playerMovement;
-	private float cooldownTimer = Mathf.Infinity;
+    private void Update()
+    {
+        if (!IsOwner) return; // Only the local player processes attack input
+        
+        if (Input.GetMouseButtonDown(0) && cooldownTimer > attackCooldown && playerMovement.canAttack())
+        {
+            RequestAttackServerRpc();
+            cooldownTimer = 0; 
+        }
 
-	private void Awake()
-	{
-		anim = GetComponent<Animator>();
-		playerMovement = GetComponent<PlayerMovement>();
-	}
+        cooldownTimer += Time.deltaTime;
+    }
 
-	//Player input for attack
-	private void Update()
-	{
-		if (Input.GetMouseButton(0) && cooldownTimer > attackCooldown && playerMovement.canAttack())
-			Attack();
+    [ServerRpc]
+    private void RequestAttackServerRpc(ServerRpcParams rpcParams = default)
+    {
+        AttackClientRpc(); // Sync animation & sound for all clients
 
-		cooldownTimer += Time.deltaTime;
-	}
+        GameObject wavePrefab = Resources.Load<GameObject>("Wave"); // Load from Resources folder
+        if (wavePrefab == null)
+        {
+            Debug.LogError("Wave prefab not found in Resources folder!");
+            return;
+        }
 
-	private void Attack()
-	{
-		//Call attack sound upon trigger
-		SoundManager.instance.PlaySound(attackSound);
+        // Spawn projectile on the server
+        GameObject magicWave = Instantiate(wavePrefab, wavePoint.position, Quaternion.identity);
+        NetworkObject networkObject = magicWave.GetComponent<NetworkObject>();
 
-		//Play attack animation
-		anim.SetTrigger("attack");
-		cooldownTimer = 0;
+        if (networkObject != null)
+        {
+            networkObject.Spawn(true); // Ensure all clients see it
+            SetProjectileDirectionClientRpc(networkObject.NetworkObjectId, Mathf.Sign(transform.localScale.x));
+        }
+        else
+        {
+            Debug.LogError("NetworkObject component missing on Wave prefab!");
+        }
+    }
 
-		//Sets direction of magic attack
-		magics[FindMagic()].transform.position = wavePoint.position;
-		magics[FindMagic()].GetComponent<Projectile>().SetDirection(Mathf.Sign(transform.localScale.x));
-	}
+    [ClientRpc]
+    private void AttackClientRpc()
+    {
+        SoundManager.instance.PlaySound(attackSound);
+        anim.SetTrigger("attack");
+    }
 
-	private int FindMagic()
-	{
-		for (int i = 0; i < magics.Length; i++)
-		{
-			if (!magics[i].activeInHierarchy)
-				return i;
-		}
-		return 0;
-	}
+    [ClientRpc]
+    private void SetProjectileDirectionClientRpc(ulong projectileId, float direction)
+    {
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(projectileId, out NetworkObject netObj))
+        {
+            netObj.GetComponent<Projectile>().SetDirection(direction);
+        }
+    }
 }
